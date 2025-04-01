@@ -3,15 +3,14 @@ name: Run Code Based on File Type
 on:
   push:
     paths:
-      - '**.py'
-      - '**.c'
-      - '**.cpp'
-      - '**.java'
+      - '**/*.py'
+      - '**/*.c'
+      - '**/*.cpp'
+      - '**/*.java'
 
 jobs:
   run-python:
-    if: |
-      contains(github.event.head_commit.modified, '.py')
+    if: contains(github.event.head_commit.modified, '.py')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -22,16 +21,19 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Print modified files
+        run: |
+          echo "Modified files: $GITHUB_EVENT_PATH"
+
       - name: Run Python scripts
         run: |
-          for file in $(ls *.py); do
+          for file in $(find . -name "*.py"); do
             echo "Running Python file: $file"
             python "$file"
           done
 
   run-c:
-    if: |
-      contains(github.event.head_commit.modified, '.c')
+    if: contains(github.event.head_commit.modified, '.c')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -40,16 +42,19 @@ jobs:
       - name: Install GCC
         run: sudo apt-get install gcc
 
+      - name: Print modified files
+        run: |
+          echo "Modified files: $GITHUB_EVENT_PATH"
+
       - name: Compile and Run C programs
         run: |
-          for file in $(ls *.c); do
+          for file in $(find . -name "*.c"); do
             echo "Compiling and Running C file: $file"
             gcc -o "${file%.c}" "$file" && ./$(basename "$file" .c)
           done
 
   run-cpp:
-    if: |
-      contains(github.event.head_commit.modified, '.cpp')
+    if: contains(github.event.head_commit.modified, '.cpp')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -58,16 +63,19 @@ jobs:
       - name: Install G++
         run: sudo apt-get install g++
 
+      - name: Print modified files
+        run: |
+          echo "Modified files: $GITHUB_EVENT_PATH"
+
       - name: Compile and Run C++ programs
         run: |
-          for file in $(ls *.cpp); do
+          for file in $(find . -name "*.cpp"); do
             echo "Compiling and Running C++ file: $file"
             g++ -o "${file%.cpp}" "$file" && ./$(basename "$file" .cpp)
           done
 
   run-java:
-    if: |
-      contains(github.event.head_commit.modified, '.java')
+    if: contains(github.event.head_commit.modified, '.java')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -79,9 +87,13 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Print modified files
+        run: |
+          echo "Modified files: $GITHUB_EVENT_PATH"
+
       - name: Compile and Run Java programs
         run: |
-          for file in $(ls *.java); do
+          for file in $(find . -name "*.java"); do
             echo "Compiling and Running Java file: $file"
             javac "$file" && java "${file%.java}"
           done

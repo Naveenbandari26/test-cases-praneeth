@@ -1,99 +1,92 @@
-name: Run Code Based on File Type
+name: Run Code Tests
 
 on:
   push:
     paths:
-      - '**/*.py'
-      - '**/*.c'
-      - '**/*.cpp'
-      - '**/*.java'
+      - "*.c"
+      - "*.cpp"
+      - "*.py"
+      - "*.java"
+  pull_request:
+    paths:
+      - "*.c"
+      - "*.cpp"
+      - "*.py"
+      - "*.java"
+      - "tests/**"
 
 jobs:
-  run-python:
-    if: contains(github.event.head_commit.modified, '.py')
+  run-tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
-          python-version: '3.x'
+          fetch-depth: 2  # Ensure previous commit is available
 
-      - name: Print modified files
+      - name: Install Dependencies
         run: |
-          echo "Modified files: $GITHUB_EVENT_PATH"
+          sudo apt update
+          sudo apt install -y gcc g++ openjdk-17-jdk python3
 
-      - name: Run Python scripts
+      - name: Detect Changed Files
+        id: changed-files
         run: |
-          for file in $(find . -name "*.py"); do
-            echo "Running Python file: $file"
-            python "$file"
-          done
+          BEFORE_COMMIT="${{ github.event.before }}"
+          if [ -z "$BEFORE_COMMIT" ] || ! git cat-file -e "$BEFORE_COMMIT"^{commit}; then
+            BEFORE_COMMIT=$(git rev-parse HEAD~1)  # Use last commit as fallback
+          fi
+          
+          CHANGED_FILES=$(git diff --name-only "$BEFORE_COMMIT" HEAD)
+          echo "Detected changed files: $CHANGED_FILES"
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No file changes detected. Exiting..."
+            exit 1
+          fi
 
-  run-c:
-    if: contains(github.event.head_commit.modified, '.c')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
+          echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
 
-      - name: Install GCC
-        run: sudo apt-get install gcc
-
-      - name: Print modified files
+      - name: Determine File Type
+        id: determine-file
         run: |
-          echo "Modified files: $GITHUB_EVENT_PATH"
+          if echo "$CHANGED_FILES" | grep -qE 'max_profit\.c$'; then
+            echo "language=C" >> $GITHUB_ENV
+            echo "language=C" >> $GITHUB_OUTPUT
+          elif echo "$CHANGED_FILES" | grep -qE 'max_profit\.cpp$'; then
+            echo "language=C++" >> $GITHUB_ENV
+            echo "language=C++" >> $GITHUB_OUTPUT
+          elif echo "$CHANGED_FILES" | grep -qE 'max_profit\.py$'; then
+            echo "language=Python" >> $GITHUB_ENV
+            echo "language=Python" >> $GITHUB_OUTPUT
+          elif echo "$CHANGED_FILES" | grep -qE 'max_profit\.java$'; then
+            echo "language=Java" >> $GITHUB_ENV
+            echo "language=Java" >> $GITHUB_OUTPUT
+          else
+            echo "No relevant file changes detected. Exiting..."
+            exit 1
+          fi
 
-      - name: Compile and Run C programs
+      - name: Compile and Run C Program
+        if: env.language == 'C'
         run: |
-          for file in $(find . -name "*.c"); do
-            echo "Compiling and Running C file: $file"
-            gcc -o "${file%.c}" "$file" && ./$(basename "$file" .c)
-          done
+          gcc max_profit.c -o max_profit_c
+          ./max_profit_c < tests/test_input.txt
 
-  run-cpp:
-    if: contains(github.event.head_commit.modified, '.cpp')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install G++
-        run: sudo apt-get install g++
-
-      - name: Print modified files
+      - name: Compile and Run C++ Program
+        if: env.language == 'C++'
         run: |
-          echo "Modified files: $GITHUB_EVENT_PATH"
+          g++ max_profit.cpp -o max_profit_cpp
+          ./max_profit_cpp < tests/test_input.txt
 
-      - name: Compile and Run C++ programs
+      - name: Run Python Program
+        if: env.language == 'Python'
         run: |
-          for file in $(find . -name "*.cpp"); do
-            echo "Compiling and Running C++ file: $file"
-            g++ -o "${file%.cpp}" "$file" && ./$(basename "$file" .cpp)
-          done
+          python3 max_profit.py < tests/test_input.txt
 
-  run-java:
-    if: contains(github.event.head_commit.modified, '.java')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Print modified files
+      - name: Compile and Run Java Program
+        if: env.language == 'Java'
         run: |
-          echo "Modified files: $GITHUB_EVENT_PATH"
-
-      - name: Compile and Run Java programs
-        run: |
-          for file in $(find . -name "*.java"); do
-            echo "Compiling and Running Java file: $file"
-            javac "$file" && java "${file%.java}"
-          done
+          javac max_profit.java
+          java -cp . MaxProfit < tests/test_input.txt

@@ -14,7 +14,7 @@ public class Test {
 
     // Test helper function
     public static void test(int testCaseNum, int[] prices, int expected) {
-        test_max_profit sol = new test_max_profit();
+        Test sol = new Test();
         int result = sol.maxProfit(prices);
         if (result == expected) {
             System.out.println("✅Test Case " + testCaseNum + " PASSED");

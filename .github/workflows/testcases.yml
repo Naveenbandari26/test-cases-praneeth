@@ -25,6 +25,7 @@ jobs:
       - name: Run Python scripts
         run: |
           for file in $(ls *.py); do
+            echo "Running Python file: $file"
             python "$file"
           done
 
@@ -42,6 +43,7 @@ jobs:
       - name: Compile and Run C programs
         run: |
           for file in $(ls *.c); do
+            echo "Compiling and Running C file: $file"
             gcc -o "${file%.c}" "$file" && ./$(basename "$file" .c)
           done
 
@@ -59,6 +61,7 @@ jobs:
       - name: Compile and Run C++ programs
         run: |
           for file in $(ls *.cpp); do
+            echo "Compiling and Running C++ file: $file"
             g++ -o "${file%.cpp}" "$file" && ./$(basename "$file" .cpp)
           done
 
@@ -79,5 +82,6 @@ jobs:
       - name: Compile and Run Java programs
         run: |
           for file in $(ls *.java); do
+            echo "Compiling and Running Java file: $file"
             javac "$file" && java "${file%.java}"
           done

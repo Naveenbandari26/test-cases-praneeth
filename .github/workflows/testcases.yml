@@ -1,0 +1,71 @@
+name: Run Code Based on File Type
+
+on:
+  push:
+    paths:
+      - '**.py'
+      - '**.c'
+      - '**.cpp'
+      - '**.java'
+
+jobs:
+  run-python:
+    if: endsWith(github.event.head_commit.modified[0], '.py')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run Python script
+        run: |
+          python $(ls *.py)  # Runs all Python scripts in the repo
+
+  run-c:
+    if: endsWith(github.event.head_commit.modified[0], '.c')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install GCC
+        run: sudo apt-get install gcc
+
+      - name: Compile and Run C program
+        run: |
+          gcc -o output $(ls *.c) && ./output
+
+  run-cpp:
+    if: endsWith(github.event.head_commit.modified[0], '.cpp')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install G++
+        run: sudo apt-get install g++
+
+      - name: Compile and Run C++ program
+        run: |
+          g++ -o output $(ls *.cpp) && ./output
+
+  run-java:
+    if: endsWith(github.event.head_commit.modified[0], '.java')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Compile and Run Java program
+        run: |
+          javac $(ls *.java) && java $(ls *.java | sed 's/.java//')

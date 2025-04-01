@@ -72,21 +72,21 @@ jobs:
         if: env.language == 'C'
         run: |
           gcc max_profit.c -o max_profit_c
-          ./max_profit_c < tests/test_input.txt
+          ./max_profit_c < test_max_profit.c
 
       - name: Compile and Run C++ Program
         if: env.language == 'C++'
         run: |
           g++ max_profit.cpp -o max_profit_cpp
-          ./max_profit_cpp < tests/test_input.txt
+          ./max_profit_cpp < test_max_profit.cpp
 
       - name: Run Python Program
         if: env.language == 'Python'
         run: |
-          python3 max_profit.py < tests/test_input.txt
+          python3 max_profit.py < test_max_profit.py
 
       - name: Compile and Run Java Program
         if: env.language == 'Java'
         run: |
           javac max_profit.java
-          java -cp . MaxProfit < tests/test_input.txt
+          java -cp . MaxProfit < test_max_profit.java

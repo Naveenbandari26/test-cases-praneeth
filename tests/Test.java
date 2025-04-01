@@ -1,4 +1,4 @@
-public class test_max_profit {
+public class Test {
 
     // Method to calculate the maximum profit
     public int maxProfit(int[] prices) {

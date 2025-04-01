@@ -3,16 +3,9 @@ name: Run Code Tests
 on:
   push:
     paths:
-      - "*.c"
-      - "*.cpp"
-      - "*.py"
-      - "*.java"
+      - "solutions/**"
   pull_request:
     paths:
-      - "*.c"
-      - "*.cpp"
-      - "*.py"
-      - "*.java"
       - "tests/**"
 
 jobs:
@@ -46,47 +39,53 @@ jobs:
           fi
 
           echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
-          echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "::set-output name=changed_files::$CHANGED_FILES"
 
       - name: Determine File Type
         id: determine-file
         run: |
-          if echo "$CHANGED_FILES" | grep -qE 'max_profit\.c$'; then
+          if echo "$CHANGED_FILES" | grep -qE '\.c$'; then
             echo "language=C" >> $GITHUB_ENV
-            echo "language=C" >> $GITHUB_OUTPUT
-          elif echo "$CHANGED_FILES" | grep -qE 'max_profit\.cpp$'; then
+            echo "::set-output name=language::C"
+          elif echo "$CHANGED_FILES" | grep -qE '\.cpp$'; then
             echo "language=C++" >> $GITHUB_ENV
-            echo "language=C++" >> $GITHUB_OUTPUT
-          elif echo "$CHANGED_FILES" | grep -qE 'max_profit\.py$'; then
+            echo "::set-output name=language::C++"
+          elif echo "$CHANGED_FILES" | grep -qE '\.py$'; then
             echo "language=Python" >> $GITHUB_ENV
-            echo "language=Python" >> $GITHUB_OUTPUT
-          elif echo "$CHANGED_FILES" | grep -qE 'max_profit\.java$'; then
+            echo "::set-output name=language::Python"
+          elif echo "$CHANGED_FILES" | grep -qE '\.java$'; then
             echo "language=Java" >> $GITHUB_ENV
-            echo "language=Java" >> $GITHUB_OUTPUT
+            echo "::set-output name=language::Java"
           else
             echo "No relevant file changes detected. Exiting..."
             exit 1
           fi
 
+     
+
       - name: Compile and Run C Program
-        if: env.language == 'C'
+        if: steps.determine-file.outputs.language == 'C'
         run: |
-          gcc max_profit.c -o max_profit_c
-          ./max_profit_c < test_max_profit.c
+          gcc solutions/*.c -o solution_c
+          ./solution_c < tests/test.c
 
       - name: Compile and Run C++ Program
-        if: env.language == 'C++'
+        if: steps.determine-file.outputs.language == 'C++'
         run: |
-          g++ max_profit.cpp -o max_profit_cpp
-          ./max_profit_cpp < test_max_profit.cpp
+          g++ solutions/*.cpp -o solution_cpp
+          ./solution_cpp < tests/test.cpp
 
       - name: Run Python Program
-        if: env.language == 'Python'
+        if: steps.determine-file.outputs.language == 'Python'
         run: |
-          python3 max_profit.py < test_max_profit.py
+          if [ ! -f solutions/*.py ]; then
+            echo "Error: Python script not found!"
+            exit 1
+          fi
+          python3 solutions/*.py < tests/test.py
 
       - name: Compile and Run Java Program
-        if: env.language == 'Java'
+        if: steps.determine-file.outputs.language == 'Java'
         run: |
-          javac max_profit.java
-          java -cp . MaxProfit < test_max_profit.java
+          javac solutions/*.java
+          java -cp solutions Solution < tests/Test.java

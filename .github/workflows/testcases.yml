@@ -87,5 +87,9 @@ jobs:
       - name: Compile and Run Java Program
         if: steps.determine-file.outputs.language == 'Java'
         run: |
-          javac solutions/*.java
-          java -cp solutions Solution < tests/Test.java
+          echo "Detected Java files:"
+          ls -l solutions/*.java || { echo "No Java files found!"; exit 1; }
+
+          javac solutions/*.java || { echo "Compilation failed! Check for main method."; exit 1; }
+          
+          java -cp solutions Solution || { echo "Execution failed! Ensure the main method exists."; exit 1; }

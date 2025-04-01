@@ -1,5 +1,4 @@
 # max_profit.py
-#main function
 
 class Solution:
     def maxProfit(self, prices):

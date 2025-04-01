@@ -10,7 +10,8 @@ on:
 
 jobs:
   run-python:
-    if: endsWith(github.event.head_commit.modified[0], '.py')
+    if: |
+      contains(github.event.head_commit.modified, '.py')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -21,12 +22,15 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run Python script
+      - name: Run Python scripts
         run: |
-          python $(ls *.py)  # Runs all Python scripts in the repo
+          for file in $(ls *.py); do
+            python "$file"
+          done
 
   run-c:
-    if: endsWith(github.event.head_commit.modified[0], '.c')
+    if: |
+      contains(github.event.head_commit.modified, '.c')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -35,12 +39,15 @@ jobs:
       - name: Install GCC
         run: sudo apt-get install gcc
 
-      - name: Compile and Run C program
+      - name: Compile and Run C programs
         run: |
-          gcc -o output $(ls *.c) && ./output
+          for file in $(ls *.c); do
+            gcc -o "${file%.c}" "$file" && ./$(basename "$file" .c)
+          done
 
   run-cpp:
-    if: endsWith(github.event.head_commit.modified[0], '.cpp')
+    if: |
+      contains(github.event.head_commit.modified, '.cpp')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -49,12 +56,15 @@ jobs:
       - name: Install G++
         run: sudo apt-get install g++
 
-      - name: Compile and Run C++ program
+      - name: Compile and Run C++ programs
         run: |
-          g++ -o output $(ls *.cpp) && ./output
+          for file in $(ls *.cpp); do
+            g++ -o "${file%.cpp}" "$file" && ./$(basename "$file" .cpp)
+          done
 
   run-java:
-    if: endsWith(github.event.head_commit.modified[0], '.java')
+    if: |
+      contains(github.event.head_commit.modified, '.java')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -66,6 +76,8 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Compile and Run Java program
+      - name: Compile and Run Java programs
         run: |
-          javac $(ls *.java) && java $(ls *.java | sed 's/.java//')
+          for file in $(ls *.java); do
+            javac "$file" && java "${file%.java}"
+          done

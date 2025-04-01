@@ -9,4 +9,11 @@ public class Solution {
         }
         return p;
     }
+
+    // Add a main method for testing
+    public static void main(String[] args) {
+        Solution solution = new Solution();
+        int[] prices = {7, 1, 5, 3, 6, 4}; // Sample test case
+        System.out.println("Max Profit: " + solution.maxProfit(prices));
+    }
 }

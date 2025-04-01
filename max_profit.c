@@ -1,5 +1,5 @@
 // max_profit.c
-// main_function
+
 #include <stdio.h>
 #include <limits.h>
 

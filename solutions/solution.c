@@ -6,5 +6,3 @@
 int maxProfit(int prices[], int size) {
 
     }
-
-//

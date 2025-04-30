@@ -1,6 +1,11 @@
 # test_max_profit.pyy
+import sys
+import os
 
-from max_profit import Solution
+# Add the project root directory to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from solutions.solution import Solution
 
 # Test helper function
 def test(testCaseNum, prices, expected):
